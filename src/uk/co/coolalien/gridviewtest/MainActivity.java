@@ -11,6 +11,8 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,61 +30,59 @@ public class MainActivity extends Activity {
 	ArrayList<Film> films;
 	HashMap<String, Integer> filmPosition = new HashMap<String, Integer>();
 	private MainActivity me;
-
+	FilmHarvester harvester;
+	ImageAdapter adapter;
+	private GuiThreadMessageHandler guiThreadMsgHandler;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         me = this;
-        
+       harvester = new FilmHarvester(me);
+       guiThreadMsgHandler = new GuiThreadMessageHandler();
         Thread thread = new Thread(new Runnable(){
             @Override
             public void run() {
                 try {
-                	 FilmHarvester harvester = new FilmHarvester(me);
+                	 
                      films = harvester.loadFilms();
                      //for(int i = 0; i < films.size(); i++){
                     //	 String image = films.get(i).getImage();
                     //	 String name = image.substring(image.lastIndexOf("/")+1, image.length());
                     //	 filmPosition.put(name, i);
                     // }
+
+                     
+                     	for(int i = 0; i < films.size(); i++){
+                     		
+                     		//store images in correct order
+                     		String image = films.get(i).getImage();
+                     		String imageName = image.substring(image.lastIndexOf("/")+1, image.length());
+                     		// get input stream
+                             //InputStream ims = manager.open("films/" + imageName);
+                     		File imageFile = new File(getFilesDir(), imageName);
+                             // load image as Drawable
+                             Drawable d = Drawable.createFromPath(imageFile.getPath());
+                             images.add(d);
+                             imageNames.add(imageName);
+                             //ims.close();
+                     	}
+                        
+                     Message msg = Message.obtain(guiThreadMsgHandler);
+                     msg.sendToTarget();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-
+        
         thread.start();
         
-        while(films == null){
-        	
-        }
-        
-        try {
-        	AssetManager manager = getAssets();
-        	String[] names = manager.list("films");
-        	for(int i = 0; i < names.length; i++){
-        		
-        		//store images in correct order
-        		String image = films.get(i).getImage();
-        		String imageName = image.substring(image.lastIndexOf("/")+1, image.length());
-        		// get input stream
-                //InputStream ims = manager.open("films/" + imageName);
-        		File imageFile = new File(getFilesDir(), imageName);
-                // load image as Drawable
-                Drawable d = Drawable.createFromPath(imageFile.getPath());
-                images.add(d);
-                imageNames.add(imageName);
-                //ims.close();
-        	}
-           
-        }
-        catch(IOException ex) {
-            return;
-        }
-        
+        Log.d("Debugger", String.valueOf(images.size()));
         GridView gridView = (GridView) findViewById(R.id.gridview);
-        gridView.setAdapter(new ImageAdapter(this));
+        adapter = new ImageAdapter(this);
+        gridView.setAdapter(adapter);
  
         gridView.setOnItemClickListener(new OnItemClickListener() 
         {
@@ -99,16 +99,14 @@ public class MainActivity extends Activity {
                 
             }
         });   
-        
+        Log.d("Debugger", "Done");
         
     }
     
-    public class ImageAdapter extends BaseAdapter 
-    {
+    public class ImageAdapter extends BaseAdapter {
         private Context context;
  
-        public ImageAdapter(Context c) 
-        {
+        public ImageAdapter(Context c) {
             context = c;
         }
  
@@ -127,8 +125,7 @@ public class MainActivity extends Activity {
         }
  
         //---returns an ImageView view---
-        public View getView(int position, View convertView, ViewGroup parent) 
-        {
+        public View getView(int position, View convertView, ViewGroup parent) {
             ImageView imageView;
             if (convertView == null) {
                 imageView = new ImageView(context);
@@ -143,4 +140,11 @@ public class MainActivity extends Activity {
         }
     }    
 
+    public class GuiThreadMessageHandler extends Handler {
+        public void handleMessage(Message m){
+            adapter.notifyDataSetChanged();
+        }
+    }
+
 }
+
