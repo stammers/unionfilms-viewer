@@ -6,14 +6,18 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -25,6 +29,8 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
+	public final static String EXTRA_MESSAGE = "FILM";
+	
 	ArrayList<Drawable> images = new ArrayList<Drawable>();
 	ArrayList<String> imageNames = new ArrayList<String>();
 	ArrayList<Film> films;
@@ -90,11 +96,16 @@ public class MainActivity extends Activity {
             View v, int position, long id) 
             {    
             	if(films != null){
-            		Log.d("Debugging message", imageNames.get(position));
-            		Log.d("Debugging message", String.valueOf(filmPosition.get(imageNames.get(position))));
-            		Toast.makeText(getBaseContext(), 
-                            films.get(position).getName() + " selected", 
-                            Toast.LENGTH_SHORT).show();
+            		Intent intent = new Intent(me, FilmActivity.class);
+            		Bundle b = new Bundle();
+            		b.putSerializable(EXTRA_MESSAGE, films.get(position));
+            		intent.putExtras(b);
+            		startActivity(intent);
+            		//Log.d("Debugging message", imageNames.get(position));
+            		//Log.d("Debugging message", String.valueOf(filmPosition.get(imageNames.get(position))));
+            		//Toast.makeText(getBaseContext(), 
+                    //        films.get(position).getName() + " selected", 
+                    //        Toast.LENGTH_SHORT).show();
             	}
                 
             }
@@ -146,5 +157,6 @@ public class MainActivity extends Activity {
         }
     }
 
+    
 }
 
