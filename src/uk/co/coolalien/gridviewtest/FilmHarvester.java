@@ -3,11 +3,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -114,14 +116,16 @@ public class FilmHarvester{
 	}
 
 	public void cache() throws IOException{
-		FileOutputStream fout = new FileOutputStream("films.txt");  
+		File output = new File(activity.getFilesDir(), "films.txt");
+		FileOutputStream fout = new FileOutputStream(output);  
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
 
 		oos.writeObject(films);
 	}
 
 	public void read() throws IOException, ClassNotFoundException{
-		FileInputStream fin = new FileInputStream("films.txt");
+		File input = new File(activity.getFilesDir(), "films.txt");
+		FileInputStream fin = new FileInputStream(input);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 		films = (ArrayList<Film>) ois.readObject();
 	}
@@ -144,12 +148,22 @@ public class FilmHarvester{
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				Bitmap image = null;
-				image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-
-				OutputStream stream = activity.openFileOutput(imageFile.getName(), Context.MODE_PRIVATE);
+				//URLConnection ucon = url.openConnection();
+				//InputStream is = ucon.getInputStream();
+				Bitmap image = BitmapFactory.decodeStream(new FlushedInputStream(url.openConnection().getInputStream()));
+				
+				OutputStream stream = activity.openFileOutput(imageFile.getName(), Context.MODE_WORLD_READABLE);
 			    /* Write bitmap to file using JPEG and 80% quality hint for JPEG. */
-			    image.compress(CompressFormat.JPEG, 80, stream);
+			    boolean written = image.compress(CompressFormat.JPEG, 80, stream);
+			    Log.d("Debugging Message", String.valueOf(written));
+				
+				//OutputStream os = new FileOutputStream(imageFile);
+				//byte[] data = new byte[is.available()];
+				//is.read(data);
+				//os.write(data);
+				//is.close();
+				//os.close();
+				
 				images.put(film.getName(), imageFile.getName());
 			}
 

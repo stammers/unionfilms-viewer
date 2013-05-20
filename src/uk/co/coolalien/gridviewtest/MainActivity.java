@@ -1,5 +1,6 @@
 package uk.co.coolalien.gridviewtest;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -66,12 +67,13 @@ public class MainActivity extends Activity {
         		String image = films.get(i).getImage();
         		String imageName = image.substring(image.lastIndexOf("/")+1, image.length());
         		// get input stream
-                InputStream ims = manager.open("films/" + imageName);
+                //InputStream ims = manager.open("films/" + imageName);
+        		File imageFile = new File(getFilesDir(), imageName);
                 // load image as Drawable
-                Drawable d = Drawable.createFromStream(ims, null);
+                Drawable d = Drawable.createFromPath(imageFile.getPath());
                 images.add(d);
                 imageNames.add(imageName);
-                ims.close();
+                //ims.close();
         	}
            
         }
