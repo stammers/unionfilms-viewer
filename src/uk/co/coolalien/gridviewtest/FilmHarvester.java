@@ -65,6 +65,8 @@ public class FilmHarvester{
 		Log.d("Debugging Message", String.valueOf(connection));
 		connection = checkDate();
 		Log.d("Debugging Message", String.valueOf(connection));
+		//TODO remove this line, currently prevents it from ever connecting online
+		connection = false;
 		if(connection){
 			String url = "http://www.unionfilms.org/films";
 			Document document = null;
