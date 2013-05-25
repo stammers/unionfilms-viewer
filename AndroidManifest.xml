@@ -27,6 +27,7 @@
         </activity>
         <activity
             android:name="uk.co.coolalien.gridviewtest.FilmActivity"
+            android:label="@string/title_activity_film"
             android:parentActivityName="uk.co.coolalien.gridviewtest.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
