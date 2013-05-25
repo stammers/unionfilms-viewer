@@ -106,6 +106,8 @@ public class MainActivity extends Activity {
             		//Toast.makeText(getBaseContext(), 
                     //        films.get(position).getName() + " selected", 
                     //        Toast.LENGTH_SHORT).show();
+            	}else{
+            		
             	}
                 
             }

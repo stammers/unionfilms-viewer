@@ -1,6 +1,7 @@
 package uk.co.coolalien.gridviewtest;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,12 +42,7 @@ public class FilmHarvester{
 
 	public ArrayList<Film> loadFilms(){
 		filmInfo();
-		try {
-			cacheImages();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		loadImages();
 		return films;
 	}
 	
@@ -54,8 +50,7 @@ public class FilmHarvester{
 		try {
 			cacheImages();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return;
 		}
 	}
 
@@ -68,64 +63,68 @@ public class FilmHarvester{
 		//TODO remove this line, currently prevents it from ever connecting online
 		connection = false;
 		if(connection){
-			String url = "http://www.unionfilms.org/films";
-			Document document = null;
-			try {
-				document = Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36").get();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if(document == null){
-				System.out.println("Null");
-				return;
-			}
-
-			Elements answerers = document.select("div#background .film_container");
-
-			for (Element answerer : answerers) {
-				String[] data = new String[6];
-				String image = answerer.select("img").first().absUrl("src");
-				Element link = answerer.select("a").first();
-				String date = answerer.select(".date").first().text();
-				Element info = answerer.select(".text").first();
-				String summary = "";
-				String name = link.text();
-				if(info != null){
-					summary = info.text();
-				}
-				data[0] = name;
-				data[1] = summary;
-				data[2] = image;
-				data[3] = date;
-				extraInfo(link, data);
-				films.add(new Film(data[0], data[1], data[2], data[3], data[4], data[5]));
-			}
-			try {
-				cache();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			boolean scraped = scraper();
+			boolean saved = false;
+			if(scraped){
+				saved = cache();
 			}
 		}else{
 			try {
 				read();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return;
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return;
 			}
 		}
 	}
 
-	private void extraInfo(Element link, String[] data){
+	private boolean scraper(){
+		String url = "http://www.unionfilms.org/films";
+		Document document = null;
+		try {
+			document = Jsoup.connect(url).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36").get();
+		} catch (IOException e) {
+			return false;
+		}
+		if(document == null){
+			return false;
+		}
+
+		Elements answerers = document.select("div#background .film_container");
+
+		for (Element answerer : answerers) {
+			String[] data = new String[6];
+			//initialise everything to empty string incase a further step fails
+			for(int i =0; i < data.length; i++){
+				data[i] = "";
+			}
+			String image = answerer.select("img").first().absUrl("src");
+			Element link = answerer.select("a").first();
+			String date = answerer.select(".date").first().text();
+			Element info = answerer.select(".text").first();
+			String summary = "";
+			String name = link.text();
+			if(info != null){
+				summary = info.text();
+			}
+			data[0] = name;
+			data[1] = summary;
+			data[2] = image;
+			data[3] = date;
+			extraInfoScraper(link, data);
+			films.add(new Film(data[0], data[1], data[2], data[3], data[4], data[5]));
+		}
+		return true;
+	}
+	
+	private void extraInfoScraper(Element link, String[] data){
 		String newUrl = link.absUrl("href");
 		Document document = null;
 		try {
 			document = Jsoup.connect(newUrl).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36").get();
 		} catch (IOException e) {
-			e.printStackTrace();
+			return;
 		}
 		if(document == null){
 			System.out.println("Null");
@@ -146,12 +145,18 @@ public class FilmHarvester{
 		data[5] = time;
 	}
 
-	private void cache() throws IOException{
+	
+	private boolean cache(){
 		File output = new File(activity.getFilesDir(), "films.txt");
-		FileOutputStream fout = new FileOutputStream(output);  
-		ObjectOutputStream oos = new ObjectOutputStream(fout);
-
-		oos.writeObject(films);
+			
+		try {
+			FileOutputStream fout = new FileOutputStream(output);
+			ObjectOutputStream oos = new ObjectOutputStream(fout);
+			oos.writeObject(films);
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
 	}
 
 	private void read() throws IOException, ClassNotFoundException{
@@ -176,8 +181,7 @@ public class FilmHarvester{
 				try {
 					url = new URL(film.getImage());
 				} catch (MalformedURLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					continue;
 				}
 
 				Bitmap image = BitmapFactory.decodeStream(new FlushedInputStream(url.openConnection().getInputStream()));
@@ -229,8 +233,7 @@ public class FilmHarvester{
 			Date test2 = (Date) dateFormat.parse(dateFormat.format(output.lastModified()));;
 			result = test.compareTo(test2);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return false;
 		}
 		if(result <= 0){
 			return false;
@@ -238,4 +241,6 @@ public class FilmHarvester{
 			return true;
 		}
 	}
+
+	
 }
