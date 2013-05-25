@@ -18,6 +18,7 @@ public class FilmActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_film);
+		
 		// Show the Up button in the action bar.
 		setupActionBar();
 		
@@ -39,6 +40,7 @@ public class FilmActivity extends Activity {
 	}
 
 	private void setUp(){
+		this.setTitle(film.getName());
 		TextView name = (TextView) findViewById(R.id.name);
 		TextView date = (TextView) findViewById(R.id.date);
 		TextView score = (TextView) findViewById(R.id.score);
