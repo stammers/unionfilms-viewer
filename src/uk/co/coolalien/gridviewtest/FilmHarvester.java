@@ -102,14 +102,14 @@ public class FilmHarvester{
 			String image = answerer.select("img").first().absUrl("src");
 			Element link = answerer.select("a").first();
 			String date = answerer.select(".date").first().text();
-			Element info = answerer.select(".text").first();
-			String summary = "";
+			//Element info = answerer.select(".text").first();
+			//String summary = "";
 			String name = link.text();
-			if(info != null){
-				summary = info.text();
-			}
+			//if(info != null){
+			//	summary = info.text();
+			//}
 			data[0] = name;
-			data[1] = summary;
+			//data[1] = summary;
 			data[2] = image;
 			data[3] = date;
 			extraInfoScraper(link, data);
@@ -143,6 +143,16 @@ public class FilmHarvester{
 			time = runtime.text();
 		}
 		data[5] = time;
+		
+		Element summary = info.select(".grid_8").get(1);
+		Elements paragraphs = summary.select("p");
+		data[1] = "";
+		for(Element p : paragraphs){
+			if(!p.text().equals("")){
+				data[1] = data[1] + p.text() +"\n\n";
+			}
+		}
+		data[1] = data[1].substring(0, data[1].length()-("\n".length()*2));
 	}
 
 	
