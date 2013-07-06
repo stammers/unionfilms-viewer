@@ -58,7 +58,7 @@ public class FilmHarvester{
 		//will only reload from internet if there is a connection and the file is at least a day old
 		boolean connection = checkConnection();
 		Log.d("Debugging Message", String.valueOf(connection));
-		//connection = checkDate();
+		connection = checkDate();
 		Log.d("Debugging Message", String.valueOf(connection));
 		//TODO remove this line, currently prevents it from ever connecting online
 		//connection = false;
