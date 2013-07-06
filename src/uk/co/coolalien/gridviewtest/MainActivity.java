@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -87,6 +88,8 @@ public class MainActivity extends Activity {
 
 		//thread.start();
 		new LoadingInfo().execute("GO");
+		
+		
 		Log.d("Debugger", String.valueOf(images.size()));
 		GridView gridView = (GridView) findViewById(R.id.gridview);
 		adapter = new ImageAdapter(this);
@@ -161,19 +164,21 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	public class LoadingInfo extends AsyncTask<String, Integer, String> {
+	public class LoadingInfo extends AsyncTask<String, Integer, Boolean> {
 
 		ProgressDialog progressBar;
 
 		@Override
-		protected String doInBackground(String... params) {
+		protected Boolean doInBackground(String... params) {
 			films = harvester.loadFilms();
 			//for(int i = 0; i < films.size(); i++){
 			//	 String image = films.get(i).getImage();
 			//	 String name = image.substring(image.lastIndexOf("/")+1, image.length());
 			//	 filmPosition.put(name, i);
 			// }
-
+			if(films.size() == 0){
+				return false;
+			}
 
 			for(int i = 0; i < films.size(); i++){
 
@@ -192,18 +197,21 @@ public class MainActivity extends Activity {
 				//ims.close();
 			}
 			publishProgress(100);
-			return null;
+			return true;
 		}
 
 		/* (non-Javadoc)
 		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
 		 */
 		@Override
-		protected void onPostExecute(String result) {
-			// TODO Auto-generated method stub
-			//super.onPostExecute(result);
+		protected void onPostExecute(Boolean result) {
+			//dismisses the progress bar and makes the image adapter update
+			//to show the images
 			progressBar.dismiss();
 			adapter.notifyDataSetChanged();
+			if(!result){
+				setContentView(R.layout.activity_main_nonetwork);
+			}
 		}
 
 		/* (non-Javadoc)
@@ -211,14 +219,13 @@ public class MainActivity extends Activity {
 		 */
 		@Override
 		protected void onPreExecute() {
+			//creates a progress bar
 			progressBar = new ProgressDialog(MainActivity.this);
-			//progressBar.setCancelable(true);
 			progressBar.setMessage("File downloading ...");
 			progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			progressBar.setProgress(0);
 			progressBar.setMax(100);
 			progressBar.show();
-			//progressBar.show(MainActivity.this, "Progress Dialog Title Text","Process Description Text", true);
 		}
 
 		/* (non-Javadoc)
@@ -226,9 +233,7 @@ public class MainActivity extends Activity {
 		 */
 		@Override
 		protected void onProgressUpdate(Integer... values) {
-			// TODO Auto-generated method stub
-			//super.onProgressUpdate(values);
-			//Toast.makeText(getApplicationContext(), "Loaded "+ values[0], Toast.LENGTH_LONG).show();
+			//updates the progress bar
 			progressBar.setProgress(values[0]);
 
 		}
