@@ -58,10 +58,10 @@ public class FilmHarvester{
 		//will only reload from internet if there is a connection and the file is at least a day old
 		boolean connection = checkConnection();
 		Log.d("Debugging Message", String.valueOf(connection));
-		connection = checkDate();
+		//connection = checkDate();
 		Log.d("Debugging Message", String.valueOf(connection));
 		//TODO remove this line, currently prevents it from ever connecting online
-		connection = false;
+		//connection = false;
 		if(connection){
 			boolean scraped = scraper();
 			boolean saved = false;
@@ -112,14 +112,25 @@ public class FilmHarvester{
 			//data[1] = summary;
 			data[2] = image;
 			data[3] = date;
-			extraInfoScraper(link, data);
+			String newUrl = link.absUrl("href");
+			if(!newUrl.equals("http://www.unionfilms.org")){
+				extraInfoScraper(newUrl, data);
+			}else{
+				Element info = answerer.select(".text").first();
+				String summary = "";
+				if(info != null){
+					summary = info.text();
+				}
+				data[1] = summary;
+				data[4] = "";
+				data[5] = "";
+			}
 			films.add(new Film(data[0], data[1], data[2], data[3], data[4], data[5]));
 		}
 		return true;
 	}
 	
-	private void extraInfoScraper(Element link, String[] data){
-		String newUrl = link.absUrl("href");
+	private void extraInfoScraper(String newUrl, String[] data){
 		Document document = null;
 		try {
 			document = Jsoup.connect(newUrl).userAgent("Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36").get();
