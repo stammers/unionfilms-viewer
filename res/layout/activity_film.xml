@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <TextView
+       <!-- <TextView
             android:id="@+id/name"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -21,13 +21,13 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textStyle="bold" />
+            android:textStyle="bold" /> -->
 
         <TextView
             android:id="@+id/date"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/name"
+            android:layout_alignLeft="@+id/info"
             android:layout_below="@+id/info"
             android:layout_marginTop="20dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -37,10 +37,9 @@
             style="?android:attr/textViewStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/name"
-            android:layout_alignLeft="@+id/name"
+            android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="5dp"
             android:background="@null"
             android:inputType="none"
             android:focusable="false"
@@ -52,7 +51,7 @@
             android:id="@+id/score"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/name"
+            android:layout_alignLeft="@+id/info"
             android:layout_below="@+id/date"
             android:layout_marginTop="20dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
@@ -61,7 +60,7 @@
             android:id="@+id/runtime"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/name"
+            android:layout_alignLeft="@+id/info"
             android:layout_below="@+id/score"
             android:layout_marginTop="20dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />

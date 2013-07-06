@@ -41,13 +41,13 @@ public class FilmActivity extends Activity {
 
 	private void setUp(){
 		this.setTitle(film.getName());
-		TextView name = (TextView) findViewById(R.id.name);
+		//TextView name = (TextView) findViewById(R.id.name);
 		TextView date = (TextView) findViewById(R.id.date);
 		TextView score = (TextView) findViewById(R.id.score);
 		TextView runtime = (TextView) findViewById(R.id.runtime);
 		EditText info = (EditText) findViewById(R.id.info);
 		
-		name.setText(film.getName());
+		//name.setText(film.getName());
 		date.setText(film.getDate());
 		score.setText(film.getScore());
 		runtime.setText(film.getLength());
