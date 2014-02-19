@@ -1,16 +1,13 @@
 package uk.co.coolalien.gridviewtest;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -174,17 +171,20 @@ public class FilmHarvester{
 			FileOutputStream fout = new FileOutputStream(output);
 			ObjectOutputStream oos = new ObjectOutputStream(fout);
 			oos.writeObject(films);
+			oos.close();
 		} catch (Exception e) {
 			return false;
 		}
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	private void read() throws IOException, ClassNotFoundException{
 		File input = new File(activity.getFilesDir(), "films.txt");
 		FileInputStream fin = new FileInputStream(input);
 		ObjectInputStream ois = new ObjectInputStream(fin);
 		films = (ArrayList<Film>) ois.readObject();
+		ois.close();
 	}
 
 	private void cacheImages() throws IOException{

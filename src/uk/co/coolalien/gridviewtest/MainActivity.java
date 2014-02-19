@@ -1,26 +1,17 @@
 package uk.co.coolalien.gridviewtest;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
-
-import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -28,7 +19,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -41,7 +31,6 @@ public class MainActivity extends Activity {
 	private MainActivity me;
 	FilmHarvester harvester;
 	ImageAdapter adapter;
-	private GuiThreadMessageHandler guiThreadMsgHandler;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -49,44 +38,6 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		me = this;
 		harvester = new FilmHarvester(me);
-		guiThreadMsgHandler = new GuiThreadMessageHandler();
-		Thread thread = new Thread(new Runnable(){
-			@Override
-			public void run() {
-				try {
-
-					films = harvester.loadFilms();
-					//for(int i = 0; i < films.size(); i++){
-					//	 String image = films.get(i).getImage();
-					//	 String name = image.substring(image.lastIndexOf("/")+1, image.length());
-					//	 filmPosition.put(name, i);
-					// }
-
-
-					for(int i = 0; i < films.size(); i++){
-
-						//store images in correct order
-						String image = films.get(i).getImage();
-						String imageName = image.substring(image.lastIndexOf("/")+1, image.length());
-						// get input stream
-						//InputStream ims = manager.open("films/" + imageName);
-						File imageFile = new File(getFilesDir(), imageName);
-						// load image as Drawable
-						Drawable d = Drawable.createFromPath(imageFile.getPath());
-						images.add(d);
-						imageNames.add(imageName);
-						//ims.close();
-					}
-
-					Message msg = Message.obtain(guiThreadMsgHandler);
-					msg.sendToTarget();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-
-		//thread.start();
 		new LoadingInfo().execute("GO");
 		
 		
@@ -106,11 +57,6 @@ public class MainActivity extends Activity {
 					b.putSerializable(EXTRA_MESSAGE, films.get(position));
 					intent.putExtras(b);
 					startActivity(intent);
-					//Log.d("Debugging message", imageNames.get(position));
-					//Log.d("Debugging message", String.valueOf(filmPosition.get(imageNames.get(position))));
-					//Toast.makeText(getBaseContext(), 
-					//        films.get(position).getName() + " selected", 
-					//        Toast.LENGTH_SHORT).show();
 				}else{
 
 				}
@@ -144,25 +90,19 @@ public class MainActivity extends Activity {
 
 		//---returns an ImageView view---
 		public View getView(int position, View convertView, ViewGroup parent) {
-			ImageView imageView;
-			if (convertView == null) {
-				imageView = new ImageView(context);
-				imageView.setLayoutParams(new GridView.LayoutParams(220, 330));
-				imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-				imageView.setPadding(0, 0, 0, 0);
-			} else {
-				imageView = (ImageView) convertView;
-			}
-			imageView.setImageDrawable(images.get(position));
-			return imageView;
+			View v = convertView;
+	        ImageView picture;
+	        LayoutInflater inflater = LayoutInflater.from(context);
+	        if(v == null) {
+	        	v = inflater.inflate(R.layout.griditem, parent, false);
+	        	v.setTag(R.id.picture, v.findViewById(R.id.picture));
+	        }
+
+	        picture = (ImageView)v.getTag(R.id.picture);
+			picture.setImageDrawable(images.get(position));
+			return v;
 		}
 	}    
-
-	public class GuiThreadMessageHandler extends Handler {
-		public void handleMessage(Message m){
-			adapter.notifyDataSetChanged();
-		}
-	}
 
 	public class LoadingInfo extends AsyncTask<String, Integer, Boolean> {
 
@@ -171,11 +111,6 @@ public class MainActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(String... params) {
 			films = harvester.loadFilms();
-			//for(int i = 0; i < films.size(); i++){
-			//	 String image = films.get(i).getImage();
-			//	 String name = image.substring(image.lastIndexOf("/")+1, image.length());
-			//	 filmPosition.put(name, i);
-			// }
 			if(films.size() == 0){
 				return false;
 			}
@@ -186,7 +121,6 @@ public class MainActivity extends Activity {
 				String image = films.get(i).getImage();
 				String imageName = image.substring(image.lastIndexOf("/")+1, image.length());
 				// get input stream
-				//InputStream ims = manager.open("films/" + imageName);
 				File imageFile = new File(getFilesDir(), imageName);
 				// load image as Drawable
 				Drawable d = Drawable.createFromPath(imageFile.getPath());
@@ -194,7 +128,6 @@ public class MainActivity extends Activity {
 				imageNames.add(imageName);
 				float percentage = ((i+1)/films.size()) * 100;
 				publishProgress((int)Math.ceil(percentage));
-				//ims.close();
 			}
 			publishProgress(100);
 			return true;
